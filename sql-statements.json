@@ -1,0 +1,6 @@
+{
+  "initialize_quotes": "CREATE TABLE IF NOT EXISTS quotes (id INT AUTO_INCREMENT PRIMARY KEY, content TEXT NOT NULL)",
+  "initialize_riddles": "CREATE TABLE IF NOT EXISTS riddles (id INT AUTO_INCREMENT PRIMARY KEY, question TEXT NOT NULL, answer TEXT NOT NULL)",
+  "get_quote": "SELECT * FROM quotes ORDER BY RAND() LIMIT 1",
+  "get_riddle": "SELECT * FROM riddles ORDER BY RAND() LIMIT 1"
+}
