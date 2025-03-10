@@ -197,5 +197,15 @@
    }
    ```
 
-   
+5. /ip-location?ip=目标IP地址 （查询ip所在地）
 
+   ```json
+   {
+     "code": 200,
+     "message": "success",
+     "data": {
+       "ip": "18.182.7.159",
+       "province": "东京都"
+     }
+   }
+   ```
