@@ -5,5 +5,8 @@
   "get_quote": "SELECT * FROM quotes ORDER BY RAND() LIMIT 1",
   "get_riddle": "SELECT * FROM riddles ORDER BY RAND() LIMIT 1",
   "update_stats": "INSERT INTO api_stats (endpoint, count) VALUES (?, 1) ON DUPLICATE KEY UPDATE count = count + 1",
-  "get_stats": "SELECT endpoint, count, last_accessed FROM api_stats ORDER BY last_accessed DESC"
+  "get_stats": "SELECT endpoint, count, last_accessed FROM api_stats ORDER BY last_accessed DESC",
+  "create_access_logs": "CREATE TABLE IF NOT EXISTS access_logs (id INT AUTO_INCREMENT PRIMARY KEY, ip VARCHAR(45) NOT NULL, access_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, endpoint VARCHAR(255) NOT NULL)",
+  "log_access": "INSERT INTO access_logs (ip, endpoint) VALUES (?, ?)",
+  "get_access_stats": "SELECT ip, access_time, endpoint FROM access_logs WHERE endpoint != '/stats' ORDER BY access_time DESC"
 }

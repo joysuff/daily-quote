@@ -20,6 +20,7 @@ async function initializeDB() {
     await connection.query(sqlConfig.initialize_quotes);
     await connection.query(sqlConfig.initialize_riddles);
     await connection.query(sqlConfig.create_stats);
+    await connection.query(sqlConfig.create_access_logs);
     connection.release();
     console.log('数据库初始化成功');
   } catch (error) {
@@ -37,6 +38,8 @@ app.get('/quote', async (req, res) => {
     // 在/quote接口处理中
     connection.release();
     await pool.query(sqlConfig.update_stats, ['/quote']);
+    const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',')[0].trim();
+    await pool.query(sqlConfig.log_access, [clientIP, '/quote']);
 
     if(rows.length > 0) {
       res.json({
@@ -64,6 +67,8 @@ app.get('/riddle', async (req, res) => {
     const [rows] = await connection.query(sqlConfig.get_riddle);
     // 在/riddle接口处理中
     await pool.query(sqlConfig.update_stats, ['/riddle']);
+    const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',')[0].trim();
+    await pool.query(sqlConfig.log_access, [clientIP, '/riddle']);
     connection.release();
 
     if(rows.length > 0) {
@@ -92,7 +97,24 @@ app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-// 新增统计接口
+// 新增访问统计接口
+app.get('/access-stats', async (req, res) => {
+  try {
+    const [stats] = await pool.query(sqlConfig.get_access_stats);
+    res.json({
+      code: 200,
+      message: 'success',
+      data: stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: '访问统计查询失败'
+    });
+  }
+});
+
+// 原有统计接口
 app.get('/stats', async (req, res) => {
   try {
     const [stats] = await pool.query(sqlConfig.get_stats);

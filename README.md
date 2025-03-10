@@ -119,3 +119,83 @@
      ```
 
 > 到这里你的接口就能开始使用了
+
+# 目前所有接口
+
+1. /quote：（每日一言）
+
+   ```json
+   {
+       "code": 200,
+       "message": "success",
+       "data": "做一个积极向上的人，读温柔的句子，见阳光的人，眼里全是温柔和笑意。"
+   }
+   ```
+
+2. /riddle：（脑筋急转弯）
+
+   ```json
+   {
+     "code": 200,
+     "message": "success",
+     "data": {
+       "question": "用铁锤锤鸡蛋为什么锤不破？",
+       "answer": "铁锤当然不会破了"
+     }
+   }
+   ```
+
+3. /stats：（统计接口访问数量）
+
+   ```json
+   {
+     "code": 200,
+     "message": "success",
+     "data": [
+       {
+         "endpoint": "/riddle",
+         "count": 44,
+         "last_accessed": "2025-03-10T11:34:44.000Z"
+       },
+       {
+         "endpoint": "/quote",
+         "count": 77,
+         "last_accessed": "2025-03-10T11:33:51.000Z"
+       }
+     ]
+   }
+   ```
+
+4. /access-stats：（访问接口的用户数据）
+
+   ```json
+   {
+     "code": 200,
+     "message": "success",
+     "data": [
+       {
+         "ip": "18.182.35.251",
+         "access_time": "2025-03-10T11:34:44.000Z",
+         "endpoint": "/riddle"
+       },
+       {
+         "ip": "18.182.35.251",
+         "access_time": "2025-03-10T11:34:39.000Z",
+         "endpoint": "/riddle"
+       },
+       {
+         "ip": "18.182.35.251",
+         "access_time": "2025-03-10T11:33:51.000Z",
+         "endpoint": "/quote"
+       },
+       {
+         "ip": "18.182.35.251",
+         "access_time": "2025-03-10T11:33:48.000Z",
+         "endpoint": "/quote"
+       }
+     ]
+   }
+   ```
+
+   
+
