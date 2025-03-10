@@ -1,6 +1,9 @@
 {
   "initialize_quotes": "CREATE TABLE IF NOT EXISTS quotes (id INT AUTO_INCREMENT PRIMARY KEY, content TEXT NOT NULL)",
   "initialize_riddles": "CREATE TABLE IF NOT EXISTS riddles (id INT AUTO_INCREMENT PRIMARY KEY, question TEXT NOT NULL, answer TEXT NOT NULL)",
+  "create_stats": "CREATE TABLE IF NOT EXISTS api_stats (id INT AUTO_INCREMENT PRIMARY KEY, endpoint VARCHAR(255) UNIQUE, count INT DEFAULT 0, last_accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)",
   "get_quote": "SELECT * FROM quotes ORDER BY RAND() LIMIT 1",
-  "get_riddle": "SELECT * FROM riddles ORDER BY RAND() LIMIT 1"
+  "get_riddle": "SELECT * FROM riddles ORDER BY RAND() LIMIT 1",
+  "update_stats": "INSERT INTO api_stats (endpoint, count) VALUES (?, 1) ON DUPLICATE KEY UPDATE count = count + 1",
+  "get_stats": "SELECT endpoint, count, last_accessed FROM api_stats ORDER BY last_accessed DESC"
 }

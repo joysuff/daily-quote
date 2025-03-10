@@ -19,6 +19,7 @@ async function initializeDB() {
     // 分别执行两个创建表语句
     await connection.query(sqlConfig.initialize_quotes);
     await connection.query(sqlConfig.initialize_riddles);
+    await connection.query(sqlConfig.create_stats);
     connection.release();
     console.log('数据库初始化成功');
   } catch (error) {
@@ -33,7 +34,9 @@ app.get('/quote', async (req, res) => {
   try {
     const connection = await pool.getConnection();
     const [rows] = await connection.query(sqlConfig.get_quote);
+    // 在/quote接口处理中
     connection.release();
+    await pool.query(sqlConfig.update_stats, ['/quote']);
 
     if(rows.length > 0) {
       res.json({
@@ -59,7 +62,10 @@ app.get('/riddle', async (req, res) => {
   try {
     const connection = await pool.getConnection();
     const [rows] = await connection.query(sqlConfig.get_riddle);
+    // 在/riddle接口处理中
+    await pool.query(sqlConfig.update_stats, ['/riddle']);
     connection.release();
+
     if(rows.length > 0) {
       res.json({
         code: 200,
@@ -84,4 +90,21 @@ app.get('/riddle', async (req, res) => {
 });
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
+});
+
+// 新增统计接口
+app.get('/stats', async (req, res) => {
+  try {
+    const [stats] = await pool.query(sqlConfig.get_stats);
+    res.json({
+      code: 200,
+      message: 'success',
+      data: stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: '统计查询失败'
+    });
+  }
 });
