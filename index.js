@@ -52,7 +52,7 @@ async function initializeDB() {
 
         // 异常结果处理
         if (!location) {
-          console.error('无效的IP查询结果:', ip, '详细信息:', result);
+          // console.error('无效的IP查询结果:', ip, '详细信息:', result);
           return res.status(500).json({ 
             code: 500,
             message: '无法解析该IP的地理位置',
@@ -68,7 +68,7 @@ async function initializeDB() {
         // 保存地理位置信息
         if (location) {
           const [saveResult] = await pool.query(sqlConfig.save_location, [ip, province]);
-          console.log('数据库保存结果:', saveResult);
+          // console.log('数据库保存结果:', saveResult);
         }
 
         // 记录访问日志
