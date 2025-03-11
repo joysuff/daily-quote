@@ -47,27 +47,35 @@ async function initializeDB() {
 
         // IP解析处理
         const result = searcher.search(ip);
-        const province = (result.province || '未知').replace(/\\s+/g, '');
+        const province = (result.province || result.country || '').replace(/\\s+/g, '');
+        const location = province;
 
         // 异常结果处理
-        if (!province || province === '未知') {
+        if (!location) {
           console.error('无效的IP查询结果:', ip, '详细信息:', result);
           return res.status(500).json({ 
-            code: 500, 
+            code: 500,
             message: '无法解析该IP的地理位置',
-            detail: result
+            detail: {
+              country: country,
+              province: province,
+              city: result.city || '',
+              isp: result.isp || ''
+            }
           });
         }
 
         // 保存地理位置信息
-        if (province && province !== '未知') {
+        if (location) {
           const [saveResult] = await pool.query(sqlConfig.save_location, [ip, province]);
           console.log('数据库保存结果:', saveResult);
         }
 
         // 记录访问日志
         const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',')[0].trim();
-        await pool.query(sqlConfig.log_access, [clientIP, '/ip-location']);
+        if (!['/stats', '/access-stats', '/ip-location'].includes(req.path)) {
+      await pool.query(sqlConfig.log_access, [clientIP, '/ip-location']);
+    }
 
         // 返回成功响应
         res.json({
@@ -105,7 +113,9 @@ app.get('/quote', async (req, res) => {
     connection.release();
 
     // 步骤4：更新接口统计
-    await pool.query(sqlConfig.update_stats, ['/quote']);
+    if (!['/stats', '/access-stats', '/ip-location'].includes(req.path)) {
+      await pool.query(sqlConfig.update_stats, ['/quote']);
+    }
     
     // 步骤5：记录访问日志
     const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',')[0].trim();
@@ -147,7 +157,9 @@ app.get('/riddle', async (req, res) => {
     connection.release();
 
     // 步骤4：更新接口统计
-    await pool.query(sqlConfig.update_stats, ['/riddle']);
+    if (!['/stats', '/access-stats', '/ip-location'].includes(req.path)) {
+      await pool.query(sqlConfig.update_stats, ['/riddle']);
+    }
     
     // 步骤5：记录访问日志
     const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',')[0].trim();
@@ -201,7 +213,9 @@ app.get('/access-stats', async (req, res) => {
 
     // 步骤3：记录统计查询日志
     const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',')[0].trim();
-    await pool.query(sqlConfig.log_access, [clientIP, '/access-stats']);
+    if (!['/stats', '/access-stats', '/ip-location'].includes(req.path)) {
+      await pool.query(sqlConfig.log_access, [clientIP, '/access-stats']);
+    }
 
   } catch (error) {
     // 错误处理：记录日志并返回标准错误
@@ -228,7 +242,9 @@ app.get('/stats', async (req, res) => {
 
     // 步骤3：记录统计查询日志
     const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',')[0].trim();
-    await pool.query(sqlConfig.log_access, [clientIP, '/stats']);
+    if (!['/stats', '/access-stats', '/ip-location'].includes(req.path)) {
+      await pool.query(sqlConfig.log_access, [clientIP, '/stats']);
+    }
 
   } catch (error) {
     // 错误处理：记录日志并返回标准错误
