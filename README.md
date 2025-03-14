@@ -224,5 +224,7 @@
 
 # 在这里可以查看接口状态
 
-[接口状态]: https://768451.xyz
+[点击这里在界面上方输入你的域名检测](https://768451.xyz)
+
+[自己部署点这](https://github.com/joysuff/API_Dashboard)
 
