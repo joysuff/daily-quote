@@ -49,9 +49,13 @@
    - 启动项目
 
      ```bash
-     pm2 start index.js --name daily-quote
+     npm install
      ```
 
+     ```bash
+     pm2 start index.js --name daily-quote
+     ```
+     
      ```bash
      pm2 save
      ```
