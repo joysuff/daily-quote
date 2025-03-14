@@ -10,7 +10,7 @@
 
 2. 新建数据库（使用mysql数据库）
 
-3. 修改配置
+3. 下载项目文件修改配置
 
    - 在项目文件中找到config.js,内容如下
 
@@ -30,9 +30,9 @@
      };
      ```
 
-     修改端口和数据库信息
+     修改端口和数据库信息(要与第二步创建的数据库一致)
 
-4. 将该好的项目问价打包上传到domans\你的域名\public html\目录下
+4. 将该好的项目文件打包上传到domans\你的域名\public html\目录下（或直接在该目录下git仓库，记得修改配置）
 
 5. 安装pm2
 
@@ -200,12 +200,29 @@
 5. /ip-location?ip=目标IP地址 （查询ip所在地）
 
    ```json
+   Test Case: Empty IP
+   Response:
    {
-     "code": 200,
-     "message": "success",
-     "data": {
-       "ip": "18.182.7.159",
-       "province": "东京都"
-     }
+     "code": 400,
+     "message": "缺少IP参数"
+   }
+   
+   Test Case: Invalid IP Format
+   Response:
+   {
+     "code": 500,
+     "message": "IP查询服务不可用"
+   }
+   
+   Test Case: IPv6 Address
+   Response:
+   {
+     "code": 500,
+     "message": "IP查询服务不可用"
    }
    ```
+
+# 在这里可以查看接口状态
+
+[接口状态]: https://768451.xyz
+
