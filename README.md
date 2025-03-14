@@ -10,7 +10,11 @@
 
 2. 新建数据库（使用mysql数据库）
 
-3. 下载项目文件修改配置
+3. cd到`domans\你的域名\public html\`目录下，克隆仓库
+
+   ```bash
+   git clone https://github.com/joysuff/daily-quote.git
+   ```
 
    - 在项目文件中找到config.js,内容如下
 
@@ -30,11 +34,9 @@
      };
      ```
 
-     修改端口和数据库信息(要与第二步创建的数据库一致)
+     修改**端口**和**数据库信息**(要与第二步创建的数据库一致)
 
-4. 将该好的项目文件打包上传到domans\你的域名\public html\目录下（或直接在该目录下git仓库，记得修改配置）
-
-5. 安装pm2
+4. 安装pm2
 
    ```bash
    bash <(curl -s https://raw.githubusercontent.com/k0baya/alist_repl/main/serv00/install-pm2.sh)
@@ -42,7 +44,7 @@
 
    > 如果安装完成后执行 `pm2` 提示命令未找到，你可以断开 SSH 连接，再重新连接，即可
 
-6. cd到domans\你的域名\public html\
+5. cd到domans\你的域名\public html\
 
    - 启动项目
 
@@ -54,9 +56,9 @@
      pm2 save
      ```
 
-7. **注意：一定要启动项目之后再去数据库面板增加数据（执行程序会自动创建数据表）**
+6. **注意：一定要启动项目之后再去数据库面板增加数据（执行程序会自动创建数据表）**
 
-8. 向数据库填充数据（在控制面板打开数据库后台）
+7. 向数据库填充数据（在控制面板打开数据库后台）
 
    - quote表数据插入示例
 
@@ -89,7 +91,7 @@
      ('时钟什么时候不会走？', '时钟本来就不会走');
      ```
 
-9. 访问接口
+8. 访问接口
 
    - quote接口(访问：你的域名/quote)
 
@@ -200,25 +202,18 @@
 5. /ip-location?ip=目标IP地址 （查询ip所在地）
 
    ```json
-   Test Case: Empty IP
-   Response:
    {
-     "code": 400,
-     "message": "缺少IP参数"
-   }
-   
-   Test Case: Invalid IP Format
-   Response:
-   {
-     "code": 500,
-     "message": "IP查询服务不可用"
-   }
-   
-   Test Case: IPv6 Address
-   Response:
-   {
-     "code": 500,
-     "message": "IP查询服务不可用"
+     "code": 200,
+     "message": "success",
+     "data": {
+       "ip": "18.177.121.161",
+       "province": "东京都",
+       "city": "东京",
+       "isp": "亚马逊",
+       "latitude": 35.6895,
+       "longitude": 139.692,
+       "country": "Japan"
+     }
    }
    ```
 

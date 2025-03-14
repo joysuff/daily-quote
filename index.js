@@ -7,6 +7,7 @@ const port = config.port;
 const fs = require('fs').promises;
 const path = require('path');
 const Searcher = require('ip2region').default;
+const axios = require('axios');
 // 临时恢复同步查询用于调试
 // const Searcher = require('ip2region');
 
@@ -39,6 +40,28 @@ function isIPv6(ip) {
 function extractIPv4FromMappedIPv6(ip) {
   const match = ip.match(/:(\d+\.\d+\.\d+\.\d+)$/);
   return match ? match[1] : null;
+}
+
+// 获取IP的地理位置信息（包括经纬度）
+async function getIPLocation(ip) {
+  try {
+    const response = await axios.get(`http://ip-api.com/json/${ip}?fields=status,message,country,regionName,city,lat,lon,isp`);
+    const data = response.data;
+    
+    if (data.status === 'success') {
+      return {
+        country: data.country,
+        region: data.regionName,
+        city: data.city,
+        latitude: data.lat,
+        longitude: data.lon,
+        isp: data.isp
+      };
+    }
+  } catch (error) {
+    console.error('IP-API查询失败:', error.message);
+  }
+  return null;
 }
 
 // 数据库初始化模块
@@ -82,6 +105,9 @@ async function initializeDB() {
           return res.status(400).json({ code: 400, message: 'IP格式无效' });
         }
 
+        // 获取 IP 的地理位置信息（包括经纬度）
+        const geoLocation = await getIPLocation(ip);
+
         // IPv6 特殊处理
         if (isIPv6(ip)) {
           // 尝试从 IPv4 映射的 IPv6 地址中提取 IPv4
@@ -94,31 +120,63 @@ async function initializeDB() {
             const city = (region.city || '').trim();
             const isp = (region.isp || '').trim();
 
-            if (!province) {
+            if (!province && !geoLocation) {
               return res.status(404).json({
                 code: 404,
                 message: '无法解析该IP的地理位置',
-                detail: { ip, province, city, isp }
+                detail: { 
+                  ip, 
+                  province: '',
+                  city: '',
+                  isp: '',
+                  latitude: null,
+                  longitude: null
+                }
               });
             }
 
             return res.json({
               code: 200,
               message: 'success',
-              data: { ip, province, city, isp }
+              data: { 
+                ip, 
+                province: province || (geoLocation ? geoLocation.region : ''),
+                city: city || (geoLocation ? geoLocation.city : ''),
+                isp: isp || (geoLocation ? geoLocation.isp : ''),
+                latitude: geoLocation ? geoLocation.latitude : null,
+                longitude: geoLocation ? geoLocation.longitude : null,
+                country: geoLocation ? geoLocation.country : null
+              }
             });
           }
 
-          // 对于纯 IPv6 地址，返回特殊提示
+          // 对于纯 IPv6 地址
+          if (geoLocation) {
+            return res.json({
+              code: 200,
+              message: 'success',
+              data: {
+                ip,
+                province: geoLocation.region || '',
+                city: geoLocation.city || '',
+                isp: geoLocation.isp || '',
+                latitude: geoLocation.latitude,
+                longitude: geoLocation.longitude,
+                country: geoLocation.country
+              }
+            });
+          }
+
           return res.status(404).json({
             code: 404,
-            message: '当前系统暂不支持纯 IPv6 地址的地理位置查询',
+            message: '无法解析该IP的地理位置',
             detail: {
               ip,
               province: '',
               city: '',
               isp: '',
-              note: '建议使用 IPv4 地址进行查询'
+              latitude: null,
+              longitude: null
             }
           });
         }
@@ -131,21 +189,23 @@ async function initializeDB() {
         const isp = (region.isp || '').trim();
 
         // 异常结果处理
-        if (!province) {
+        if (!province && !geoLocation) {
           return res.status(404).json({ 
             code: 404,
             message: '无法解析该IP的地理位置',
             detail: {
               ip,
-              province,
-              city,
-              isp
+              province: '',
+              city: '',
+              isp: '',
+              latitude: null,
+              longitude: null
             }
           });
         }
 
-        // 保存地理位置信息
-        await pool.query(sqlConfig.save_location, [ip, province]);
+        // 保存地理位置信息（不包含经纬度）
+        await pool.query(sqlConfig.save_location, [ip, province || (geoLocation ? geoLocation.region : '')]);
 
         // 记录访问日志
         const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',')[0].trim();
@@ -159,9 +219,12 @@ async function initializeDB() {
           message: 'success',
           data: { 
             ip,
-            province,
-            city,
-            isp
+            province: province || (geoLocation ? geoLocation.region : ''),
+            city: city || (geoLocation ? geoLocation.city : ''),
+            isp: isp || (geoLocation ? geoLocation.isp : ''),
+            latitude: geoLocation ? geoLocation.latitude : null,
+            longitude: geoLocation ? geoLocation.longitude : null,
+            country: geoLocation ? geoLocation.country : null
           }
         });
 
